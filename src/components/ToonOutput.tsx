@@ -14,28 +14,28 @@ function highlightToon(toon: string): React.JSX.Element[] {
 
     if (ch === "{" || ch === "}" || ch === "[" || ch === "]") {
       elements.push(
-        <span key={keyIdx++} className="text-gray-400 font-semibold">
+        <span key={keyIdx++} className="text-gray-400 dark:text-gray-500 font-semibold">
           {ch}
         </span>
       );
       i++;
     } else if (ch === "|") {
       elements.push(
-        <span key={keyIdx++} className="text-gray-300">
+        <span key={keyIdx++} className="text-gray-300 dark:text-gray-600">
           {ch}
         </span>
       );
       i++;
     } else if (ch === ",") {
       elements.push(
-        <span key={keyIdx++} className="text-gray-300">
+        <span key={keyIdx++} className="text-gray-300 dark:text-gray-600">
           {ch}
         </span>
       );
       i++;
     } else if (ch === ":") {
       elements.push(
-        <span key={keyIdx++} className="text-blue-300">
+        <span key={keyIdx++} className="text-blue-300 dark:text-blue-500">
           {ch}
         </span>
       );
@@ -65,7 +65,7 @@ function highlightToon(toon: string): React.JSX.Element[] {
         }
       }
       elements.push(
-        <span key={keyIdx++} className="text-emerald-600">
+        <span key={keyIdx++} className="text-emerald-600 dark:text-emerald-400">
           {str}
         </span>
       );
@@ -79,22 +79,21 @@ function highlightToon(toon: string): React.JSX.Element[] {
         val += toon[i];
         i++;
       }
-      // Color: T/F as purple, numbers as blue, keys/strings as default
       if (val === "T" || val === "F") {
         elements.push(
-          <span key={keyIdx++} className="text-violet-500 font-medium">
+          <span key={keyIdx++} className="text-violet-500 dark:text-violet-400 font-medium">
             {val}
           </span>
         );
       } else if (/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(val)) {
         elements.push(
-          <span key={keyIdx++} className="text-blue-500">
+          <span key={keyIdx++} className="text-blue-500 dark:text-blue-400">
             {val}
           </span>
         );
       } else {
         elements.push(
-          <span key={keyIdx++} className="text-gray-700">
+          <span key={keyIdx++} className="text-gray-700 dark:text-gray-300">
             {val}
           </span>
         );
@@ -116,24 +115,23 @@ export default function ToonOutput({ value }: Props) {
     });
   }, [value]);
 
-  // Break long TOON output into visual lines at top-level `|`
   const displayLines = value ? wrapToonLines(value) : [];
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-gray-50/80">
-        <span className="text-[11px] font-semibold tracking-wide text-gray-500 uppercase">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-[#1a1c26]">
+        <span className="text-[11px] font-semibold tracking-wide text-gray-500 dark:text-gray-400 uppercase">
           Output · TOON
         </span>
         <button
           onClick={handleCopy}
           disabled={!value}
-          className="text-[10px] font-medium px-2 py-0.5 rounded border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          className="text-[10px] font-medium px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           {copied ? "Copied ✓" : "Copy"}
         </button>
       </div>
-      <div className="flex-1 min-h-0 overflow-auto p-3 bg-white">
+      <div className="flex-1 min-h-0 overflow-auto p-3 bg-white dark:bg-[#161820]">
         {value ? (
           <pre className="font-mono text-[12px] leading-[20px] whitespace-pre-wrap break-all">
             {displayLines.map((line, idx) => (
@@ -141,7 +139,7 @@ export default function ToonOutput({ value }: Props) {
             ))}
           </pre>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-300 text-[12px]">
+          <div className="flex items-center justify-center h-full text-gray-300 dark:text-gray-600 text-[12px]">
             TOON output will appear here
           </div>
         )}
