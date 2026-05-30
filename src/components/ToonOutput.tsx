@@ -1,11 +1,11 @@
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 
 interface Props {
   value: string;
 }
 
-function highlightToon(toon: string): JSX.Element[] {
-  const elements: JSX.Element[] = [];
+function highlightToon(toon: string): React.JSX.Element[] {
+  const elements: React.JSX.Element[] = [];
   let i = 0;
   let keyIdx = 0;
 
