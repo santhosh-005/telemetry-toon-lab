@@ -1,33 +1,45 @@
 # telemetry-toon-lab
 
-Convert telemetry & security JSON into compact **TOON** (Terse Object-Oriented Notation) and visualize token savings for LLM pipelines.
+Convert telemetry & security JSON into compact formats and visualize token savings for LLM pipelines.
 
-## What is TOON?
+## Output Formats
 
-TOON is a compact text notation that strips JSON's syntactic overhead — quotes, commas, colons, whitespace — into a denser format:
+### Compact (pipe-separated)
+
+Strips JSON syntax into a dense single-line notation:
 
 ```
-// JSON (164 chars)
-{"method":"POST","path":"/api/v2/events","status":201,"duration_ms":142,"headers":{"authorization":"Bearer ***"}}
-
-// TOON (89 chars)
-method:POST|path:/api/v2/events|status:201|duration_ms:142|headers:{authorization:Bearer ***}
+method:POST|path:/api/v2/events|status:201|headers:{authorization:Bearer ***}
 ```
 
-**Key rules:**
-- `key:value` pairs separated by `|`
-- Nested objects in `{}`
-- Arrays in `[]`, comma-separated
-- Strings unquoted unless they contain reserved chars
-- `~` = null, `T`/`F` = booleans
+### TOON Schema (table-oriented)
+
+Eliminates repeated field names in object arrays by declaring a schema once:
+
+```
+context:
+  task: Our favorite hikes together
+  location: Boulder
+friends[3]: ana,luis,sam
+hikes[2]{id,name,distanceKm,elevationGain,companion,wasSunny}:
+  1,Blue Lake Trail,7.5,320,ana,true
+  2,Ridge Overlook,9.2,540,luis,false
+```
+
+**Rules:**
+- `key: value` — primitive values
+- `key:` — nested object (children indented)
+- `key[N]: v1,v2,...` — primitive array
+- `key[N]{f1,f2,...}:` — homogeneous object array as table (schema declared once, rows are values only)
+- `~` = null, `true`/`false` = booleans
 
 ## Features
 
-- **Three-panel layout** — JSON input, TOON output, statistics
-- **Token reduction stats** — estimated token & character savings
+- **Dual output** — Compact + TOON Schema side-by-side
+- **Token stats** — estimated token & character savings per format
 - **Sample datasets** — HTTP logs, security alerts, K8s events, cloud audit
-- **Syntax highlighting** — color-coded TOON output
-- **Copy to clipboard** — one-click TOON copy
+- **Syntax highlighting** — color-coded output for both formats
+- **Dark mode** — toggle with localStorage persistence
 
 ## Quick Start
 
@@ -49,17 +61,17 @@ Open `http://localhost:5173`.
 ```
 src/
 ├── lib/
-│   ├── toonConverter.ts   # JSON → TOON conversion logic
-│   ├── tokenCounter.ts    # Token estimation & stats
-│   └── sampleData.ts      # Sample telemetry datasets
+│   ├── toonConverter.ts         # Compact JSON converter
+│   ├── toonSchemaConverter.ts   # TOON Schema converter
+│   ├── tokenCounter.ts          # Token estimation & stats
+│   └── sampleData.ts            # Sample telemetry datasets
 ├── components/
-│   ├── JsonEditor.tsx      # JSON input with line numbers
-│   ├── ToonOutput.tsx      # Highlighted TOON output
-│   ├── StatsPanel.tsx      # Reduction statistics
-│   └── SampleSelector.tsx  # Sample dataset buttons
-├── App.tsx                 # Main application
-├── index.css               # Global styles
-└── main.tsx                # Entry point
+│   ├── JsonEditor.tsx            # JSON input with line numbers
+│   ├── DualOutputPanel.tsx       # Dual output with inline stats
+│   └── SampleSelector.tsx        # Sample dataset buttons
+├── App.tsx                       # Main application
+├── index.css                     # Global styles
+└── main.tsx                      # Entry point
 ```
 
 ## License

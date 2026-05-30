@@ -1,16 +1,18 @@
 import { useState, useCallback, useEffect } from "react";
 import JsonEditor from "./components/JsonEditor";
-import ToonOutput from "./components/ToonOutput";
-import StatsPanel from "./components/StatsPanel";
+import DualOutputPanel from "./components/DualOutputPanel";
 import SampleSelector from "./components/SampleSelector";
 import { convertJsonStringToToon } from "./lib/toonConverter";
+import { convertToToonSchema } from "./lib/toonSchemaConverter";
 import { computeStats, type TokenStats } from "./lib/tokenCounter";
 import { sampleDatasets } from "./lib/sampleData";
 
 function App() {
   const [jsonInput, setJsonInput] = useState("");
-  const [toonOutput, setToonOutput] = useState("");
-  const [stats, setStats] = useState<TokenStats | null>(null);
+  const [compactOutput, setCompactOutput] = useState("");
+  const [schemaOutput, setSchemaOutput] = useState("");
+  const [compactStats, setCompactStats] = useState<TokenStats | null>(null);
+  const [schemaStats, setSchemaStats] = useState<TokenStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeSample, setActiveSample] = useState<number | null>(null);
   const [dark, setDark] = useState(() => {
@@ -25,22 +27,31 @@ function App() {
     localStorage.setItem("theme", dark ? "dark" : "light");
   }, [dark]);
 
+  const convertBoth = useCallback((json: string) => {
+    try {
+      const compact = convertJsonStringToToon(json);
+      const schema = convertToToonSchema(json);
+      setCompactOutput(compact);
+      setSchemaOutput(schema);
+      setCompactStats(computeStats(json, compact));
+      setSchemaStats(computeStats(json, schema));
+      setError(null);
+    } catch (e) {
+      setError(e instanceof SyntaxError ? e.message : "Invalid JSON");
+      setCompactOutput("");
+      setSchemaOutput("");
+      setCompactStats(null);
+      setSchemaStats(null);
+    }
+  }, []);
+
   const handleConvert = useCallback(() => {
     if (!jsonInput.trim()) {
       setError("Input is empty");
       return;
     }
-    try {
-      const toon = convertJsonStringToToon(jsonInput);
-      setToonOutput(toon);
-      setStats(computeStats(jsonInput, toon));
-      setError(null);
-    } catch (e) {
-      setError(e instanceof SyntaxError ? e.message : "Invalid JSON");
-      setToonOutput("");
-      setStats(null);
-    }
-  }, [jsonInput]);
+    convertBoth(jsonInput);
+  }, [jsonInput, convertBoth]);
 
   const handleJsonChange = useCallback((value: string) => {
     setJsonInput(value);
@@ -57,19 +68,16 @@ function App() {
     );
     setActiveSample(idx >= 0 ? idx : null);
 
-    try {
-      const toon = convertJsonStringToToon(json);
-      setToonOutput(toon);
-      setStats(computeStats(json, toon));
-    } catch {
-      // shouldn't happen with our samples
-    }
-  }, []);
+    // Auto-convert both formats
+    convertBoth(json);
+  }, [convertBoth]);
 
   const handleClear = useCallback(() => {
     setJsonInput("");
-    setToonOutput("");
-    setStats(null);
+    setCompactOutput("");
+    setSchemaOutput("");
+    setCompactStats(null);
+    setSchemaStats(null);
     setError(null);
     setActiveSample(null);
   }, []);
@@ -87,7 +95,7 @@ function App() {
               </h1>
             </div>
             <span className="text-[10px] font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded">
-              v1.0
+              v2.0
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -148,10 +156,10 @@ function App() {
         </div>
       </div>
 
-      {/* Main panels */}
+      {/* Main panels: JSON editor + dual output */}
       <main className="flex-1 min-h-0">
         <div className="max-w-[1440px] mx-auto px-4 py-4 h-[calc(100vh-140px)]">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_320px] gap-3 h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full">
             {/* JSON Input */}
             <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-[#161820] shadow-sm min-h-[300px]">
               <JsonEditor
@@ -161,14 +169,14 @@ function App() {
               />
             </div>
 
-            {/* TOON Output */}
-            <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-[#161820] shadow-sm min-h-[300px]">
-              <ToonOutput value={toonOutput} />
-            </div>
-
-            {/* Statistics */}
-            <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-[#161820] shadow-sm min-h-[300px]">
-              <StatsPanel stats={stats} />
+            {/* Dual output: Compact + TOON Schema */}
+            <div className="min-h-[300px]">
+              <DualOutputPanel
+                compactOutput={compactOutput}
+                schemaOutput={schemaOutput}
+                compactStats={compactStats}
+                schemaStats={schemaStats}
+              />
             </div>
           </div>
         </div>
